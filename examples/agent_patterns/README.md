@@ -1,54 +1,54 @@
-# Common agentic patterns
+# 一般的なエージェントパターン / Common agentic patterns
 
-This folder contains examples of different common patterns for agents.
+このフォルダには、エージェントの一般的なパターンの例が含まれています。
 
-## Deterministic flows
+## 決定論的フロー / Deterministic flows
 
-A common tactic is to break down a task into a series of smaller steps. Each task can be performed by an agent, and the output of one agent is used as input to the next. For example, if your task was to generate a story, you could break it down into the following steps:
+一般的な戦術は、タスクを一連の小さなステップに分解することです。各タスクはエージェントによって実行され、あるエージェントの出力が次のエージェントの入力として使用されます。例えば、ストーリーを生成するタスクであれば、以下のステップに分解できます：
 
-1. Generate an outline
-2. Generate the story
-3. Generate the ending
+1. アウトラインを生成する
+2. ストーリー本文を生成する
+3. エンディングを生成する
 
-Each of these steps can be performed by an agent. The output of one agent is used as input to the next.
+これらの各ステップはエージェントによって実行できます。あるエージェントの出力が次のエージェントの入力として使用されます。
 
-See the [`deterministic.py`](./deterministic.py) file for an example of this.
+この例については、[`deterministic.py`](./deterministic.py)ファイルを参照してください。
 
-## Handoffs and routing
+## ハンドオフとルーティング / Handoffs and routing
 
-In many situations, you have specialized sub-agents that handle specific tasks. You can use handoffs to route the task to the right agent.
+多くの状況では、特定のタスクを処理する専門のサブエージェントがあります。ハンドオフを使用して、タスクを適切なエージェントにルーティングできます。
 
-For example, you might have a frontline agent that receives a request, and then hands off to a specialized agent based on the language of the request.
-See the [`routing.py`](./routing.py) file for an example of this.
+例えば、フロントラインエージェントがリクエストを受け取り、リクエストの言語に基づいて専門のエージェントにハンドオフするといったことが考えられます。
+この例については、[`routing.py`](./routing.py)ファイルを参照してください。
 
-## Agents as tools
+## ツールとしてのエージェント / Agents as tools
 
-The mental model for handoffs is that the new agent "takes over". It sees the previous conversation history, and owns the conversation from that point onwards. However, this is not the only way to use agents. You can also use agents as a tool - the tool agent goes off and runs on its own, and then returns the result to the original agent.
+ハンドオフの考え方は、新しいエージェントが「引き継ぐ」というものです。新しいエージェントは以前の会話履歴を見て、その時点から会話を所有します。しかし、これがエージェントを使用する唯一の方法ではありません。エージェントをツールとして使用することもできます - ツールエージェントは独自に実行され、結果を元のエージェントに返します。
 
-For example, you could model the translation task above as tool calls instead: rather than handing over to the language-specific agent, you could call the agent as a tool, and then use the result in the next step. This enables things like translating multiple languages at once.
+例えば、上記の翻訳タスクをツール呼び出しとしてモデル化することもできます：言語固有のエージェントに引き継ぐのではなく、エージェントをツールとして呼び出し、その結果を次のステップで使用することができます。これにより、複数の言語を一度に翻訳するなどが可能になります。
 
-See the [`agents_as_tools.py`](./agents_as_tools.py) file for an example of this.
+この例については、[`agents_as_tools.py`](./agents_as_tools.py)ファイルを参照してください。
 
-## LLM-as-a-judge
+## 判断者としてのLLM / LLM-as-a-judge
 
-LLMs can often improve the quality of their output if given feedback. A common pattern is to generate a response using a model, and then use a second model to provide feedback. You can even use a small model for the initial generation and a larger model for the feedback, to optimize cost.
+LLMは、フィードバックを与えられると出力の品質を向上させることができます。一般的なパターンは、モデルを使用して応答を生成し、次に2番目のモデルを使用してフィードバックを提供することです。コストを最適化するために、初期生成には小さなモデルを使用し、フィードバックには大きなモデルを使用することもできます。
 
-For example, you could use an LLM to generate an outline for a story, and then use a second LLM to evaluate the outline and provide feedback. You can then use the feedback to improve the outline, and repeat until the LLM is satisfied with the outline.
+例えば、LLMを使用してストーリーのアウトラインを生成し、次に2番目のLLMを使用してアウトラインを評価し、フィードバックを提供することができます。そのフィードバックを使用してアウトラインを改善し、LLMが満足するまで繰り返すことができます。
 
-See the [`llm_as_a_judge.py`](./llm_as_a_judge.py) file for an example of this.
+この例については、[`llm_as_a_judge.py`](./llm_as_a_judge.py)ファイルを参照してください。
 
-## Parallelization
+## 並列処理 / Parallelization
 
-Running multiple agents in parallel is a common pattern. This can be useful for both latency (e.g. if you have multiple steps that don't depend on each other) and also for other reasons e.g. generating multiple responses and picking the best one.
+複数のエージェントを並列に実行することは一般的なパターンです。これは、レイテンシ（例：互いに依存しない複数のステップがある場合）や、複数の応答を生成して最良のものを選ぶなど、他の理由にも役立ちます。
 
-See the [`parallelization.py`](./parallelization.py) file for an example of this. It runs a translation agent multiple times in parallel, and then picks the best translation.
+この例については、[`parallelization.py`](./parallelization.py)ファイルを参照してください。これは翻訳エージェントを並列に複数回実行し、最良の翻訳を選択します。
 
-## Guardrails
+## ガードレール / Guardrails
 
-Related to parallelization, you often want to run input guardrails to make sure the inputs to your agents are valid. For example, if you have a customer support agent, you might want to make sure that the user isn't trying to ask for help with a math problem.
+並列処理に関連して、エージェントへの入力が有効であることを確認するために入力ガードレールを実行したい場合がよくあります。例えば、カスタマーサポートエージェントがある場合、ユーザーが数学の問題の解決を依頼していないことを確認したいかもしれません。
 
-You can definitely do this without any special Agents SDK features by using parallelization, but we support a special guardrail primitive. Guardrails can have a "tripwire" - if the tripwire is triggered, the agent execution will immediately stop and a `GuardrailTripwireTriggered` exception will be raised.
+並列処理を使用すれば、特別なAgents SDKの機能なしでもこれを実現できますが、特別なガードレールプリミティブをサポートしています。ガードレールには「トリップワイヤー」を設定できます - トリップワイヤーがトリガーされると、エージェントの実行は即座に停止し、`GuardrailTripwireTriggered`例外が発生します。
 
-This is really useful for latency: for example, you might have a very fast model that runs the guardrail and a slow model that runs the actual agent. You wouldn't want to wait for the slow model to finish, so guardrails let you quickly reject invalid inputs.
+これはレイテンシにとって非常に有用です：例えば、ガードレールを実行する非常に高速なモデルと、実際のエージェントを実行する遅いモデルがあるかもしれません。遅いモデルが終了するのを待ちたくないので、ガードレールを使用すると無効な入力を素早く拒否できます。
 
-See the [`input_guardrails.py`](./input_guardrails.py) and [`output_guardrails.py`](./output_guardrails.py) files for examples.
+例については、[`input_guardrails.py`](./input_guardrails.py)と[`output_guardrails.py`](./output_guardrails.py)ファイルを参照してください。

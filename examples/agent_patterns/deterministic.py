@@ -5,58 +5,63 @@ from pydantic import BaseModel
 from agents import Agent, Runner, trace
 
 """
-This example demonstrates a deterministic flow, where each step is performed by an agent.
-1. The first agent generates a story outline
-2. We feed the outline into the second agent
-3. The second agent checks if the outline is good quality and if it is a scifi story
-4. If the outline is not good quality or not a scifi story, we stop here
-5. If the outline is good quality and a scifi story, we feed the outline into the third agent
-6. The third agent writes the story
+このサンプルは決定論的フロー（順序が決まったステップ処理）を示しています。各ステップは異なるエージェントによって実行されます。
+1. 最初のエージェントがストーリーのアウトラインを生成
+2. そのアウトラインを2番目のエージェントに渡す
+3. 2番目のエージェントはアウトラインの品質とSFストーリーかどうかを判断
+4. アウトラインの品質が低いか、SFストーリーでない場合はここで処理を停止
+5. アウトラインの品質が高く、SFストーリーである場合は3番目のエージェントにアウトラインを渡す
+6. 3番目のエージェントがストーリーを書く
 """
 
+# ストーリーのアウトラインを生成するエージェント
 story_outline_agent = Agent(
     name="story_outline_agent",
     instructions="Generate a very short story outline based on the user's input.",
 )
 
 
+# アウトラインチェッカーの出力タイプを定義するクラス
 class OutlineCheckerOutput(BaseModel):
-    good_quality: bool
-    is_scifi: bool
+    good_quality: bool  # アウトラインの品質が良いかどうか
+    is_scifi: bool      # SFストーリーかどうか
 
 
+# アウトラインの品質とジャンルをチェックするエージェント
 outline_checker_agent = Agent(
     name="outline_checker_agent",
     instructions="Read the given story outline, and judge the quality. Also, determine if it is a scifi story.",
-    output_type=OutlineCheckerOutput,
+    output_type=OutlineCheckerOutput,  # 出力タイプを指定
 )
 
+# 実際にストーリーを書くエージェント
 story_agent = Agent(
     name="story_agent",
     instructions="Write a short story based on the given outline.",
-    output_type=str,
+    output_type=str,  # 出力タイプは文字列
 )
 
 
 async def main():
+    # ユーザーからの入力を受け取る
     input_prompt = input("What kind of story do you want? ")
 
-    # Ensure the entire workflow is a single trace
+    # ワークフロー全体を単一のトレースで実行（モニタリングのため）
     with trace("Deterministic story flow"):
-        # 1. Generate an outline
+        # 1. アウトラインを生成
         outline_result = await Runner.run(
             story_outline_agent,
             input_prompt,
         )
         print("Outline generated")
 
-        # 2. Check the outline
+        # 2. アウトラインをチェック
         outline_checker_result = await Runner.run(
             outline_checker_agent,
             outline_result.final_output,
         )
 
-        # 3. Add a gate to stop if the outline is not good quality or not a scifi story
+        # 3. アウトラインの品質が低いかSFストーリーでない場合は処理を停止するゲートを追加
         assert isinstance(outline_checker_result.final_output, OutlineCheckerOutput)
         if not outline_checker_result.final_output.good_quality:
             print("Outline is not good quality, so we stop here.")
@@ -68,7 +73,7 @@ async def main():
 
         print("Outline is good quality and a scifi story, so we continue to write the story.")
 
-        # 4. Write the story
+        # 4. ストーリーを書く
         story_result = await Runner.run(
             story_agent,
             outline_result.final_output,
@@ -76,5 +81,6 @@ async def main():
         print(f"Story: {story_result.final_output}")
 
 
+# スクリプトが直接実行された場合にmain関数を実行
 if __name__ == "__main__":
     asyncio.run(main())

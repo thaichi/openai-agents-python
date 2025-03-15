@@ -1,36 +1,64 @@
 # OpenAI Agents SDK
 
-The OpenAI Agents SDK is a lightweight yet powerful framework for building multi-agent workflows.
+OpenAI Agents SDKは、マルチエージェントワークフローを構築するための軽量かつ強力なフレームワークです。
 
-<img src="https://cdn.openai.com/API/docs/images/orchestration.png" alt="Image of the Agents Tracing UI" style="max-height: 803px;">
+<img src="https://cdn.openai.com/API/docs/images/orchestration.png" alt="Agents Tracing UIの画像" style="max-height: 803px;">
 
-### Core concepts:
+### 主要概念:
 
-1. [**Agents**](https://openai.github.io/openai-agents-python/agents): LLMs configured with instructions, tools, guardrails, and handoffs
-2. [**Handoffs**](https://openai.github.io/openai-agents-python/handoffs/): Allow agents to transfer control to other agents for specific tasks
-3. [**Guardrails**](https://openai.github.io/openai-agents-python/guardrails/): Configurable safety checks for input and output validation
-4. [**Tracing**](https://openai.github.io/openai-agents-python/tracing/): Built-in tracking of agent runs, allowing you to view, debug and optimize your workflows
+1. [**エージェント**](https://openai.github.io/openai-agents-python/agents): 指示、ツール、ガードレール、ハンドオフで構成されたLLM
+2. [**ハンドオフ**](https://openai.github.io/openai-agents-python/handoffs/): 特定のタスクのために他のエージェントに制御を移す機能
+3. [**ガードレール**](https://openai.github.io/openai-agents-python/guardrails/): 入出力の検証のための設定可能な安全性チェック
+4. [**トレーシング**](https://openai.github.io/openai-agents-python/tracing/): エージェントの実行を追跡し、ワークフローの表示、デバッグ、最適化を可能にする機能
 
-Explore the [examples](examples) directory to see the SDK in action, and read our [documentation](https://openai.github.io/openai-agents-python/) for more details.
+[examples](examples)ディレクトリでSDKの実際の動作を確認し、詳細については[ドキュメント](https://openai.github.io/openai-agents-python/)をご覧ください。
 
-Notably, our SDK [is compatible](https://openai.github.io/openai-agents-python/models/) with any model providers that support the OpenAI Chat Completions API format.
+特筆すべきは、このSDKはOpenAI Chat Completions APIフォーマットをサポートする任意のモデルプロバイダーと[互換性がある](https://openai.github.io/openai-agents-python/models/)ことです。
 
-## Get started
+## WSL環境でのセットアップ
 
-1. Set up your Python environment
+WSL（Windows Subsystem for Linux）環境でOpenAI Agents SDKを使用するための手順は以下の通りです：
 
+1. WSLがインストールされていない場合は、インストールします
+
+```bash
+# 管理者権限でPowerShellを開き、以下のコマンドを実行
+wsl --install
 ```
-python -m venv env
+
+2. WSLを起動し、必要なパッケージをインストールします
+
+```bash
+# WSLを起動後、以下のコマンドでパッケージを更新
+sudo apt update && sudo apt upgrade -y
+
+# Pythonと必要なツールをインストール
+sudo apt install python3 python3-pip python3-venv -y
+```
+
+3. プロジェクトディレクトリを作成し、移動します
+
+```bash
+mkdir openai-agents-project
+cd openai-agents-project
+```
+
+## 使い方
+
+1. Python環境をセットアップ
+
+```bash
+python3 -m venv env
 source env/bin/activate
 ```
 
-2. Install Agents SDK
+2. Agents SDKをインストール
 
-```
+```bash
 pip install openai-agents
 ```
 
-## Hello world example
+## Hello worldの例
 
 ```python
 from agents import Agent, Runner
@@ -40,16 +68,16 @@ agent = Agent(name="Assistant", instructions="You are a helpful assistant")
 result = Runner.run_sync(agent, "Write a haiku about recursion in programming.")
 print(result.final_output)
 
-# Code within the code,
-# Functions calling themselves,
-# Infinite loop's dance.
+# コードの中のコード、
+# 自分自身を呼び出す関数、
+# 無限ループの舞。
 ```
 
-(_If running this, ensure you set the `OPENAI_API_KEY` environment variable_)
+(_実行する際は、`OPENAI_API_KEY`環境変数を設定してください_)
 
-(_For Jupyter notebook users, see [hello_world_jupyter.py](examples/basic/hello_world_jupyter.py)_)
+(_Jupyterノートブックユーザーは[hello_world_jupyter.py](examples/basic/hello_world_jupyter.py)を参照してください_)
 
-## Handoffs example
+## ハンドオフの例
 
 ```python
 from agents import Agent, Runner
@@ -82,7 +110,7 @@ if __name__ == "__main__":
     asyncio.run(main())
 ```
 
-## Functions example
+## 関数の例
 
 ```python
 import asyncio
@@ -105,74 +133,74 @@ agent = Agent(
 async def main():
     result = await Runner.run(agent, input="What's the weather in Tokyo?")
     print(result.final_output)
-    # The weather in Tokyo is sunny.
+    # 東京の天気は晴れです。
 
 
 if __name__ == "__main__":
     asyncio.run(main())
 ```
 
-## The agent loop
+## エージェントループ
 
-When you call `Runner.run()`, we run a loop until we get a final output.
+`Runner.run()`を呼び出すと、最終出力が得られるまでループが実行されます。
 
-1. We call the LLM, using the model and settings on the agent, and the message history.
-2. The LLM returns a response, which may include tool calls.
-3. If the response has a final output (see below for more on this), we return it and end the loop.
-4. If the response has a handoff, we set the agent to the new agent and go back to step 1.
-5. We process the tool calls (if any) and append the tool responses messages. Then we go to step 1.
+1. モデルと設定、メッセージ履歴を使用してLLMを呼び出します。
+2. LLMはツール呼び出しを含む可能性のある応答を返します。
+3. 応答に最終出力がある場合（詳細は後述）、それを返してループを終了します。
+4. 応答にハンドオフがある場合、エージェントを新しいエージェントに設定し、ステップ1に戻ります。
+5. ツール呼び出しがある場合はそれを処理し、ツール応答メッセージを追加します。その後、ステップ1に戻ります。
 
-There is a `max_turns` parameter that you can use to limit the number of times the loop executes.
+ループの実行回数を制限するための`max_turns`パラメータがあります。
 
-### Final output
+### 最終出力
 
-Final output is the last thing the agent produces in the loop.
+最終出力は、エージェントがループで生成する最後のものです。
 
-1.  If you set an `output_type` on the agent, the final output is when the LLM returns something of that type. We use [structured outputs](https://platform.openai.com/docs/guides/structured-outputs) for this.
-2.  If there's no `output_type` (i.e. plain text responses), then the first LLM response without any tool calls or handoffs is considered as the final output.
+1. エージェントに`output_type`を設定した場合、LLMがそのタイプのものを返したときが最終出力です。これには[構造化出力](https://platform.openai.com/docs/guides/structured-outputs)を使用します。
+2. `output_type`がない場合（つまり、プレーンテキスト応答）、ツール呼び出しやハンドオフのない最初のLLM応答が最終出力と見なされます。
 
-As a result, the mental model for the agent loop is:
+その結果、エージェントループの概念モデルは次のようになります：
 
-1. If the current agent has an `output_type`, the loop runs until the agent produces structured output matching that type.
-2. If the current agent does not have an `output_type`, the loop runs until the current agent produces a message without any tool calls/handoffs.
+1. 現在のエージェントに`output_type`がある場合、エージェントがそのタイプに一致する構造化出力を生成するまでループが実行されます。
+2. 現在のエージェントに`output_type`がない場合、現在のエージェントがツール呼び出し/ハンドオフのないメッセージを生成するまでループが実行されます。
 
-## Common agent patterns
+## 一般的なエージェントパターン
 
-The Agents SDK is designed to be highly flexible, allowing you to model a wide range of LLM workflows including deterministic flows, iterative loops, and more. See examples in [`examples/agent_patterns`](examples/agent_patterns).
+Agents SDKは非常に柔軟に設計されており、決定論的フロー、反復ループなど、幅広いLLMワークフローをモデル化できます。[`examples/agent_patterns`](examples/agent_patterns)の例を参照してください。
 
-## Tracing
+## トレーシング
 
-The Agents SDK automatically traces your agent runs, making it easy to track and debug the behavior of your agents. Tracing is extensible by design, supporting custom spans and a wide variety of external destinations, including [Logfire](https://logfire.pydantic.dev/docs/integrations/llms/openai/#openai-agents), [AgentOps](https://docs.agentops.ai/v1/integrations/agentssdk), [Braintrust](https://braintrust.dev/docs/guides/traces/integrations#openai-agents-sdk), [Scorecard](https://docs.scorecard.io/docs/documentation/features/tracing#openai-agents-sdk-integration), and [Keywords AI](https://docs.keywordsai.co/integration/development-frameworks/openai-agent). For more details about how to customize or disable tracing, see [Tracing](http://openai.github.io/openai-agents-python/tracing).
+Agents SDKは自動的にエージェントの実行を追跡し、エージェントの動作を簡単に追跡およびデバッグできるようにします。トレーシングは設計上拡張可能であり、カスタムスパンと、[Logfire](https://logfire.pydantic.dev/docs/integrations/llms/openai/#openai-agents)、[AgentOps](https://docs.agentops.ai/v1/integrations/agentssdk)、[Braintrust](https://braintrust.dev/docs/guides/traces/integrations#openai-agents-sdk)、[Scorecard](https://docs.scorecard.io/docs/documentation/features/tracing#openai-agents-sdk-integration)、[Keywords AI](https://docs.keywordsai.co/integration/development-frameworks/openai-agent)などの様々な外部送信先をサポートしています。トレーシングのカスタマイズや無効化に関する詳細については、[トレーシング](http://openai.github.io/openai-agents-python/tracing)を参照してください。
 
-## Development (only needed if you need to edit the SDK/examples)
+## 開発（SDK/例を編集する必要がある場合のみ）
 
-0. Ensure you have [`uv`](https://docs.astral.sh/uv/) installed.
+0. [`uv`](https://docs.astral.sh/uv/)がインストールされていることを確認してください。
 
 ```bash
 uv --version
 ```
 
-1. Install dependencies
+1. 依存関係をインストール
 
 ```bash
 make sync
 ```
 
-2. (After making changes) lint/test
+2. （変更後）リント/テスト
 
 ```
-make tests  # run tests
-make mypy   # run typechecker
-make lint   # run linter
+make tests  # テスト実行
+make mypy   # 型チェッカー実行
+make lint   # リンター実行
 ```
 
-## Acknowledgements
+## 謝辞
 
-We'd like to acknowledge the excellent work of the open-source community, especially:
+以下のオープンソースコミュニティの優れた成果に感謝します：
 
--   [Pydantic](https://docs.pydantic.dev/latest/) (data validation) and [PydanticAI](https://ai.pydantic.dev/) (advanced agent framework)
+-   [Pydantic](https://docs.pydantic.dev/latest/)（データ検証）と[PydanticAI](https://ai.pydantic.dev/)（高度なエージェントフレームワーク）
 -   [MkDocs](https://github.com/squidfunk/mkdocs-material)
 -   [Griffe](https://github.com/mkdocstrings/griffe)
--   [uv](https://github.com/astral-sh/uv) and [ruff](https://github.com/astral-sh/ruff)
+-   [uv](https://github.com/astral-sh/uv)と[ruff](https://github.com/astral-sh/ruff)
 
-We're committed to continuing to build the Agents SDK as an open source framework so others in the community can expand on our approach.
+私たちはAgents SDKをオープンソースフレームワークとして継続的に構築し、コミュニティの他のメンバーが私たちのアプローチを拡張できるよう取り組んでいます。

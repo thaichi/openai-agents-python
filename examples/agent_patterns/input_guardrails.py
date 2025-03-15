@@ -15,25 +15,26 @@ from agents import (
 )
 
 """
-This example shows how to use guardrails.
+このサンプルはガードレールの使用方法を示しています。
 
-Guardrails are checks that run in parallel to the agent's execution.
-They can be used to do things like:
-- Check if input messages are off-topic
-- Check that output messages don't violate any policies
-- Take over control of the agent's execution if an unexpected input is detected
+ガードレールはエージェントの実行と並行して実行されるチェックです。
+以下のような用途に使用できます：
+- 入力メッセージがトピックから外れていないかチェック
+- 出力メッセージがポリシーに違反していないかチェック
+- 予期しない入力が検出された場合にエージェントの実行を制御
 
-In this example, we'll setup an input guardrail that trips if the user is asking to do math homework.
-If the guardrail trips, we'll respond with a refusal message.
+この例では、ユーザーが数学の宿題を解くよう依頼した場合にトリップする入力ガードレールを設定します。
+ガードレールがトリップした場合、拒否メッセージで応答します。
 """
 
 
-### 1. An agent-based guardrail that is triggered if the user is asking to do math homework
+### 1. ユーザーが数学の宿題を依頼した場合にトリガーされるエージェントベースのガードレール
 class MathHomeworkOutput(BaseModel):
-    is_math_homework: bool
-    reasoning: str
+    is_math_homework: bool  # 数学の宿題かどうか
+    reasoning: str          # 判断理由
 
 
+# ガードレールチェック用のエージェント
 guardrail_agent = Agent(
     name="Guardrail check",
     instructions="Check if the user is asking you to do their math homework.",
@@ -41,35 +42,39 @@ guardrail_agent = Agent(
 )
 
 
+# 入力ガードレールデコレータを使用して関数を定義
 @input_guardrail
 async def math_guardrail(
     context: RunContextWrapper[None], agent: Agent, input: str | list[TResponseInputItem]
 ) -> GuardrailFunctionOutput:
-    """This is an input guardrail function, which happens to call an agent to check if the input
-    is a math homework question.
-    """
+    """これは入力ガードレール関数で、入力が数学の宿題の質問かどうかをチェックするためにエージェントを呼び出します。"""
+    # ガードレールエージェントを実行
     result = await Runner.run(guardrail_agent, input, context=context.context)
     final_output = result.final_output_as(MathHomeworkOutput)
 
+    # ガードレール関数の出力を返す
     return GuardrailFunctionOutput(
         output_info=final_output,
-        tripwire_triggered=final_output.is_math_homework,
+        tripwire_triggered=final_output.is_math_homework,  # 数学の宿題の場合にトリップワイヤーをトリガー
     )
 
 
-### 2. The run loop
+### 2. 実行ループ
 
 
 async def main():
+    # カスタマーサポートエージェントを作成し、入力ガードレールを設定
     agent = Agent(
         name="Customer support agent",
         instructions="You are a customer support agent. You help customers with their questions.",
-        input_guardrails=[math_guardrail],
+        input_guardrails=[math_guardrail],  # 数学の宿題をチェックするガードレールを設定
     )
 
+    # 会話履歴を保持するリスト
     input_data: list[TResponseInputItem] = []
 
     while True:
+        # ユーザーからの入力を受け取る
         user_input = input("Enter a message: ")
         input_data.append(
             {
@@ -79,12 +84,13 @@ async def main():
         )
 
         try:
+            # エージェントを実行
             result = await Runner.run(agent, input_data)
             print(result.final_output)
-            # If the guardrail didn't trigger, we use the result as the input for the next run
+            # ガードレールがトリガーされなかった場合、結果を次の実行の入力として使用
             input_data = result.to_input_list()
         except InputGuardrailTripwireTriggered:
-            # If the guardrail triggered, we instead add a refusal message to the input
+            # ガードレールがトリガーされた場合、拒否メッセージを入力に追加
             message = "Sorry, I can't help you with your math homework."
             print(message)
             input_data.append(
@@ -94,12 +100,13 @@ async def main():
                 }
             )
 
-    # Sample run:
+    # サンプル実行：
     # Enter a message: What's the capital of California?
     # The capital of California is Sacramento.
     # Enter a message: Can you help me solve for x: 2x + 5 = 11
     # Sorry, I can't help you with your math homework.
 
 
+# スクリプトが直接実行された場合にmain関数を実行
 if __name__ == "__main__":
     asyncio.run(main())

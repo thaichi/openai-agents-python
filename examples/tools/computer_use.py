@@ -32,7 +32,7 @@ async def main():
                 model="computer-use-preview",
                 model_settings=ModelSettings(truncation="auto"),
             )
-            result = await Runner.run(agent, "Search for SF sports news and summarize.")
+            result = await Runner.run(agent, "githubのリポジトリを検索して、最新のリポジトリを表示してください。")
             print(result.final_output)
 
 

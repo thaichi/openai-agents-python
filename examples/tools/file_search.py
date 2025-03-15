@@ -10,7 +10,7 @@ async def main():
         tools=[
             FileSearchTool(
                 max_num_results=3,
-                vector_store_ids=["vs_67bf88953f748191be42b462090e53e7"],
+                vector_store_ids=["vs_67d5c24064048191b6ede11b35be101f"],
                 include_search_results=True,
             )
         ],

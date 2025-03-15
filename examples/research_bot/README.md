@@ -1,25 +1,25 @@
-# Research bot
+# リサーチボット
 
-This is a simple example of a multi-agent research bot. To run it:
+これはマルチエージェントリサーチボットの簡単な例です。実行方法：
 
 ```bash
 python -m examples.research_bot.main
 ```
 
-## Architecture
+## アーキテクチャ
 
-The flow is:
+処理の流れは以下の通りです：
 
-1. User enters their research topic
-2. `planner_agent` comes up with a plan to search the web for information. The plan is a list of search queries, with a search term and a reason for each query.
-3. For each search item, we run a `search_agent`, which uses the Web Search tool to search for that term and summarize the results. These all run in parallel.
-4. Finally, the `writer_agent` receives the search summaries, and creates a written report.
+1. ユーザーが研究トピックを入力します
+2. `planner_agent`が情報をウェブ検索するための計画を立てます。この計画は検索クエリのリストで、各クエリには検索語とその理由が含まれます。
+3. 各検索項目に対して、`search_agent`を実行します。これはWeb Search（ウェブ検索）ツールを使用してその用語を検索し、結果を要約します。これらはすべて並行して実行されます。
+4. 最後に、`writer_agent`が検索の要約を受け取り、レポートを作成します。
 
-## Suggested improvements
+## 改善提案
 
-If you're building your own research bot, some ideas to add to this are:
+独自のリサーチボットを構築する場合、追加できるアイデアは以下の通りです：
 
-1. Retrieval: Add support for fetching relevant information from a vector store. You could use the File Search tool for this.
-2. Image and file upload: Allow users to attach PDFs or other files, as baseline context for the research.
-3. More planning and thinking: Models often produce better results given more time to think. Improve the planning process to come up with a better plan, and add an evaluation step so that the model can choose to improve its results, search for more stuff, etc.
-4. Code execution: Allow running code, which is useful for data analysis.
+1. 検索機能：ベクトルストアから関連情報を取得するサポートを追加します。これにはFile Search（ファイル検索）ツールを使用できます。
+2. 画像とファイルのアップロード：ユーザーがPDFやその他のファイルを添付できるようにし、研究の基本的なコンテキストとして使用します。
+3. より多くの計画と思考：モデルは考える時間が多いほど良い結果を生み出すことがよくあります。より良い計画を立てるために計画プロセスを改善し、モデルが結果を改善したり、さらに検索したりできるように評価ステップを追加します。
+4. コード実行：データ分析に役立つコードの実行を可能にします。
